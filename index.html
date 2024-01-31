@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .center {
+        display: flex;
+        width: 90%;
+        margin: auto;
+      }
+
+      .topics {
+        flex: 3;
+        border: 4px double rgb(100, 100, 100);
+      }
+
+      .generator_box {
+        flex: 7;
+        padding: 40px;
+        display: grid;
+      }
+
+      .flex {
+        display: flex;
+      }
+
+      .alignCenter {
+        align-items: center;
+      }
+
+      .result-wrapper {
+        display: grid;
+        gap: 10px;
+      }
+
+      #text-generation-tool {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+      }
+
+      #topic {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+
+      .topics {
+        padding: 10px 20px;
+        height: 230px;
+      }
+
+      .topics > * {
+        font-size: large;
+        cursor: pointer;
+        padding: 10px;
+        background-color: #e9e9e9;
+      }
+
+      .topics > *:hover {
+        background-color: #e06c00;
+        color: white;
+      }
+
+      #boxes1 {
+        background-color: #c35723;
+        color: white;
+      }
+
+      #generate-button {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        background-color: #c35723;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #generate-button:hover {
+        background-color: #6d3f35;
+      }
+
+      #result-container {
+        display: none;
+        margin-bottom: 20px;
+      }
+
+      .result-wrapper {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .result-content {
+        display: flex;
+      }
+
+      .sort{
+        display: flex; 
+      }
+
+      .gap {
+        gap: 16px;
+      }
+
+      #result {
+        flex: 1;
+        height: 400px;
+        padding: 15px;
+        resize: vertical;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+      }
+
+      .bottom {
+        margin-bottom: 10px;
+      }
+
+      .copy-button-container {
+        margin-top: 10px;
+        text-align: right;
+      }
+
+      #copy-button {
+        padding: 8px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        background-color: #e2861e;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #copy-button:hover {
+        background-color: #2980b9;
+      }
+
+      /* CSS for the loader */
+      .loader {
+        display: block;
+        margin: 50px auto;
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #dba134; /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media screen and (max-width: 980px) {
+        .center {
+          display: grid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="center fullwidth">
+      <div class="topics">
+        <h1 id="boxes1" onclick="topicName('story')">Story maker</h1>
+        <h1 id="boxes2" onclick="topicName('Creative')">
+          Creative youtube Title
+        </h1>
+        <h1 id="boxes3" onclick="topicName('other')">Other</h1>
+      </div>
+      <div class="generator_box">
+        <div id="text-generation-tool">
+          <input type="text" id="topic" placeholder="Your Topic..." />
+          <div>
+            <div class="bottom alignCenter gap sort">
+              <div class="flex alignCenter">
+                <input
+                  id="sm"
+                  type="radio"
+                  checked
+                  onchange="oncharge('small')"
+                  name="size"
+                />
+                <label for="sm"> small </label>
+              </div>
+              <div class="flex alignCenter">
+                <input
+                  id="bg"
+                  type="radio"
+                  onchange="oncharge('big')"
+                  name="size"
+                />
+                <label for="bg"> Big </label>
+              </div>
+            </div>
+          </div>
+          <button id="generate-button">Generate a Summary !</button>
+          <div id="result-container" style="display: none">
+            <div class="result-wrapper">
+              <div class="result-content">
+                <textarea id="result" readonly></textarea>
+              </div>
+              <div class="copy-button-container">
+                <button id="copy-button">Copy</button>
+              </div>
+            </div>
+          </div>
+          <div id="loading" class="loader" style="display: none"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+  let ai_top = "Generate a 8 sentence story about ";
+  let selected = 1;
+  let totalSize = 4;
+
+  function topicName(e) { 
+    if (e == "story") {
+      document.getElementById("boxes1").style.backgroundColor = "#c35723";
+      document.getElementById("boxes1").style.color = "#ffffff";
+      document.getElementById("boxes2").style.backgroundColor = "#e9e9e9";
+      document.getElementById("boxes2").style.color = "#000000";
+      document.getElementById("boxes3").style.backgroundColor = "#e9e9e9";
+      document.getElementById("boxes3").style.color = "#000000";
+
+      document.querySelector(".sort").style.display = "flex";
+
+      ai_top = `Generate a ${totalSize} sentence story about `; 
+      selected = 1;
+    } else if (e == "Creative") {
+      document.getElementById("boxes2").style.backgroundColor = "#c35723";
+      document.getElementById("boxes2").style.color = "#ffffff";
+      document.getElementById("boxes1").style.backgroundColor = "#e9e9e9";
+      document.getElementById("boxes1").style.color = "#000000";
+      document.getElementById("boxes3").style.backgroundColor = "#e9e9e9";
+      document.getElementById("boxes3").style.color = "#000000";
+
+      document.querySelector(".sort").style.display = "flex"; 
+
+      ai_top = `Generate a ${totalSize} creative youtube title about `;
+      selected = 2;
+    } else if (e == "other") {
+      document.getElementById("boxes3").style.backgroundColor = "#c35723";
+      document.getElementById("boxes3").style.color = "#ffffff";
+      document.getElementById("boxes1").style.backgroundColor = "#e9e9e9";
+      document.getElementById("boxes1").style.color = "#000000";
+      document.getElementById("boxes2").style.backgroundColor = "#e9e9e9";
+      document.getElementById("boxes2").style.color = "#000000";
+
+      document.querySelector(".sort").style.display = "none"; 
+      selected = 3;
+    }
+  }
+
+  function oncharge(e) {
+    if (e == "big") {
+      totalSize = 8;
+      if (selected == 1) {
+        ai_top = `Generate a 8 sentence story about `;
+      } else {
+        ai_top = "Generate a 8 creative youtube title about ";
+      }
+    } else if (e == "small") {
+      totalSize = 4;
+      if (selected == 1) {
+        ai_top = `Generate a 4 sentence story about `;
+      } else {
+        ai_top = "Generate a 4 creative youtube title about ";
+      }
+    }
+  }
+
+  function handlecall() {
+    console.log(ai_top, totalSize);
+  }
+
+  document
+    .getElementById("generate-button")
+    .addEventListener("click", function (e) {
+      e.preventDefault();
+
+      var generateButton = document.getElementById("generate-button");
+
+      if (generateButton.disabled) {
+        return; // Prevent multiple clicks while content is being generated
+      }
+
+      generateButton.disabled = true;
+
+      let topic = document.getElementById("topic").value;
+      let prompt = ai_top + topic;
+      let loading = document.getElementById("loading");
+      let result = document.getElementById("result");
+      let resultC = document.getElementById("result-container");
+
+      if (selected == 3) {
+        prompt = topic;
+      }
+
+      loading.style.display = "block";
+      result.style.display = "none"; // hide result textarea
+      resultC.style.display = "none";
+
+      var formData = new FormData();
+      formData.append("action", "openai_generate_text");
+      formData.append("prompt", prompt);
+
+      fetch("/wp-admin/admin-ajax.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          loading.style.display = "none";
+          if (data.success) {
+            result.value = data.data.choices[0].message.content;
+            result.style.display = "block"; // show result textarea
+            resultC.style.display = "block";
+            generateButton.disabled = false;
+          } else {
+            result.value = "An error occurred: " + data.data;
+            result.style.display = "block"; // show result textarea
+            resultC.style.display = "block";
+            generateButton.disabled = false;
+          }
+        })
+        .catch((error) => {
+          loading.style.display = "none";
+          result.value = "An error occurred: " + error.message;
+          result.style.display = "block"; // show result textarea
+          resultC.style.display = "block";
+          generateButton.disabled = false;
+        });
+    });
+
+  var copyButton = document.getElementById("copy-button");
+  copyButton.addEventListener("click", function () {
+    var result = document.getElementById("result");
+    result.select();
+    document.execCommand("copy");
+    alert("Copied to clipboard!");
+  });
+</script>
